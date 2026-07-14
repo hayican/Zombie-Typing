@@ -1,0 +1,156 @@
+/* Reset margin biar rapi */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Courier New', Courier, monospace; 
+}
+
+/* Background luar game (hitam) */
+body {
+    background-color: #111;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; 
+    overflow: hidden; 
+}
+
+/* Ukuran Frame Game Utama */
+#game-container {
+    width: 1000px;
+    height: 562px; 
+    position: relative;
+    background-image: url('bg.png'); 
+    background-size: cover;
+    background-position: center;
+    border: 4px solid #555;
+    border-radius: 10px;
+    overflow: hidden; 
+}
+
+/* Desain Papan Skor */
+#scoreboard {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    background: rgba(0, 0, 0, 0.7);
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 8px;
+    z-index: 10;
+}
+
+#scoreboard h2 {
+    font-size: 18px;
+    margin-bottom: 5px;
+}
+
+/* Area Game (Sudah bersih dari flexbox) */
+#game-area {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+/* Pengaturan dasar Jalur (Pijakan zombi) */
+.lane {
+    width: 100%;
+    position: absolute;
+    left: 0;
+    height: 10px; 
+}
+
+/* Posisi 4 Jalur (Sesuaikan jika kaki zombi kurang pas) */
+#lane-1 { bottom: 340px; } 
+#lane-2 { bottom: 250px; } 
+#lane-3 { bottom: 150px; } 
+#lane-4 { bottom: 60px; }  
+
+/* Pengaturan Karakter Player */
+#player {
+    width: 220px;  
+    height: 300px; 
+    position: absolute;
+    left: 40px;    
+    bottom: 70px; /* Gw pertahankan angka 70px sesuai settingan lu */
+    background-image: url('player-idle.png'); 
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: bottom center;
+    z-index: 5;
+}
+
+/* Class untuk ganti gambar saat nembak */
+#player.shoot {
+    background-image: url('player-shoot.png');
+}
+
+/* ===============================
+   DESAIN ZOMBI & KATA
+   =============================== */
+.zombie {
+    position: absolute;
+    bottom: 0; 
+    width: 110px;  
+    height: 160px; 
+    background-image: url('zombie.png');
+    background-size: contain; 
+    background-repeat: no-repeat;
+    background-position: bottom center;
+}
+
+/* Teks kata di atas kepala zombi */
+.word {
+    position: absolute;
+    top: -35px; 
+    left: 50%;
+    transform: translateX(-50%); 
+    background-color: #000;
+    color: #fff;
+    padding: 3px 6px;
+    border-radius: 5px;
+    font-size: 16px;
+    font-weight: bold;
+    white-space: nowrap; 
+    border: 1px solid #fff;
+}
+
+/* ===============================
+   EFEK DAMAGE & MATI
+   =============================== */
+
+/* Efek saat Player kena damage (Jadi gelap) */
+#player.damaged {
+    filter: brightness(0.2) sepia(1) hue-rotate(-50deg); /* Gelap dan sedikit kemerahan */
+    transition: filter 0.1s ease;
+}
+
+/* Teks -5 yang melayang */
+.damage-text {
+    position: absolute;
+    color: #ff3333;
+    font-size: 32px;
+    font-weight: bold;
+    text-shadow: 2px 2px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000;
+    left: 200px; /* Muncul di samping kanan karakter */
+    bottom: 200px;
+    z-index: 20;
+    animation: floatUpFade 1s forwards; /* Menjalankan animasi di bawah */
+}
+
+/* Animasi melayang ke atas lalu menghilang */
+@keyframes floatUpFade {
+    0% { transform: translateY(0) scale(1); opacity: 1; }
+    100% { transform: translateY(-60px) scale(1.5); opacity: 0; }
+}
+
+/* Efek saat Zombi mati (Membesar, pudar, dan blur) */
+.zombie.dead {
+    transform: scale(1.3) rotate(10deg);
+    opacity: 0;
+    filter: grayscale(1) blur(4px);
+    transition: all 0.3s ease-out; /* Berubah dengan mulus selama 0.3 detik */
+}
