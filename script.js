@@ -10,24 +10,28 @@ const lanes = [
     document.getElementById('lane-4')
 ];
 
-// Elemen Baru UI & Tombol
+// UI
 const pauseBtn = document.getElementById('pause-btn');
 const restartBtn = document.getElementById('restart-btn');
 const pauseScreen = document.getElementById('pause-screen');
 const gameOverScreen = document.getElementById('game-over-screen');
 const finalScoreElement = document.getElementById('final-score');
 const restartOverlayBtn = document.getElementById('restart-overlay-btn');
-const resumeOverlayBtn = document.getElementById('resume-overlay-btn'); // Tangkap tombol Start baru
+const resumeOverlayBtn = document.getElementById('resume-overlay-btn');
 
 const wordList = [
     "pensil", "penghapus", "buku", "kantin", 
     "upacara", "kelas", "penggaris", "razia", 
-    "guru", "tugas", "ujian", "mading"
+    "guru", "tugas", "ujian", "mading", "spidol", "topi", "teknologi", "seragam", "rapor",
+     "kegiatan", "ekstrakurikuler", "perpustakaan",
+    "komputer", "internet", "matematika", "fisika", 
+    "kimia", "biologi", "sejarah", "bahasa", "musik", "olahraga", "laptop", "proyektor", "ruang", "kantor", "laboratorium", 
+    "fiber", "server", "dhcp"
 ];
 
 let currentTarget = null; 
-let score = 0;       // Skor saat ini (bisa naik turun)
-let totalScore = 0;  // Skor murni (hanya naik saat bunuh zombi)
+let score = 0;  
+let totalScore = 0; 
 let hp = 100;
 let isGameOver = false;
 let isPaused = false; 
@@ -35,11 +39,7 @@ let isPaused = false;
 let spawnDelay = 3000; 
 let zombieDamage = 10; 
 
-// ===============================
 // SISTEM TOMBOL KONTROL
-// ===============================
-
-// Fungsi Tombol Pause (Bisa dipanggil dari tombol pojok atau layar tengah)
 function togglePause() {
     if (isGameOver) return; 
 
@@ -56,9 +56,8 @@ function togglePause() {
 
 // Pasang fungsi pause ke kedua tombol
 pauseBtn.addEventListener('click', togglePause);
-resumeOverlayBtn.addEventListener('click', togglePause); // Tombol "Start" di tengah layar
+resumeOverlayBtn.addEventListener('click', togglePause); 
 
-// Fungsi Tombol Restart
 function restartGame() {
     location.reload(); 
 }
@@ -66,9 +65,7 @@ restartBtn.addEventListener('click', restartGame);
 restartOverlayBtn.addEventListener('click', restartGame);
 
 
-// ===============================
 // SISTEM LEVEL 
-// ===============================
 function checkLevel() {
     if (score < 120) {
         spawnDelay = 3000;
@@ -122,9 +119,7 @@ function renderTypingDisplay() {
     typingDisplay.innerHTML = typedPart + untypedPart;
 }
 
-// ===============================
 // SISTEM ZOMBI 
-// ===============================
 function spawnZombie() {
     if (isGameOver) return;
 
@@ -211,9 +206,7 @@ function scheduleNextZombie() {
 
 setTimeout(scheduleNextZombie, 1000); 
 
-// ===============================
 // SISTEM PENGETIKAN
-// ===============================
 document.addEventListener('keydown', function(event) {
     if (isGameOver || isPaused) return; 
 
@@ -237,9 +230,8 @@ document.addEventListener('keydown', function(event) {
             
             setTimeout(() => killedZombie.remove(), 300);
 
-            // Zombi mati: Poin masuk ke Skor Utama dan Skor Total
             score += 20;
-            totalScore += 20; // Variabel ini ga bakal pernah ngurang!
+            totalScore += 20;
             scoreElement.innerText = score;
 
             checkLevel();
