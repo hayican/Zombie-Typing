@@ -1,15 +1,23 @@
-// ===============================
-// SETUP AWAL
-// ===============================
 const player = document.getElementById('player');
 const scoreElement = document.getElementById('score');
+const healthElement = document.getElementById('health');
 const gameArea = document.getElementById('game-area');
+const typingDisplay = document.getElementById('typing-display');
 const lanes = [
     document.getElementById('lane-1'),
     document.getElementById('lane-2'),
     document.getElementById('lane-3'),
     document.getElementById('lane-4')
 ];
+
+// Elemen Baru UI & Tombol
+const pauseBtn = document.getElementById('pause-btn');
+const restartBtn = document.getElementById('restart-btn');
+const pauseScreen = document.getElementById('pause-screen');
+const gameOverScreen = document.getElementById('game-over-screen');
+const finalScoreElement = document.getElementById('final-score');
+const restartOverlayBtn = document.getElementById('restart-overlay-btn');
+const resumeOverlayBtn = document.getElementById('resume-overlay-btn'); // Tangkap tombol Start baru
 
 const wordList = [
     "pensil", "penghapus", "buku", "kantin", 
@@ -18,17 +26,116 @@ const wordList = [
 ];
 
 let currentTarget = null; 
-let score = 0;
+let score = 0;       // Skor saat ini (bisa naik turun)
+let totalScore = 0;  // Skor murni (hanya naik saat bunuh zombi)
+let hp = 100;
+let isGameOver = false;
+let isPaused = false; 
+
+let spawnDelay = 3000; 
+let zombieDamage = 10; 
 
 // ===============================
-// SISTEM ZOMBI (SPAWN & JALAN)
+// SISTEM TOMBOL KONTROL
+// ===============================
+
+// Fungsi Tombol Pause (Bisa dipanggil dari tombol pojok atau layar tengah)
+function togglePause() {
+    if (isGameOver) return; 
+
+    isPaused = !isPaused; 
+    
+    if (isPaused) {
+        pauseScreen.classList.remove('hidden'); 
+        pauseBtn.innerText = 'Resume';
+    } else {
+        pauseScreen.classList.add('hidden'); 
+        pauseBtn.innerText = 'Pause';
+    }
+}
+
+// Pasang fungsi pause ke kedua tombol
+pauseBtn.addEventListener('click', togglePause);
+resumeOverlayBtn.addEventListener('click', togglePause); // Tombol "Start" di tengah layar
+
+// Fungsi Tombol Restart
+function restartGame() {
+    location.reload(); 
+}
+restartBtn.addEventListener('click', restartGame);
+restartOverlayBtn.addEventListener('click', restartGame);
+
+
+// ===============================
+// SISTEM LEVEL 
+// ===============================
+function checkLevel() {
+    if (score < 120) {
+        spawnDelay = 3000;
+        zombieDamage = 10;
+    } else if (score < 220) {
+        spawnDelay = 1800; 
+        zombieDamage = 15;
+    } else {
+        spawnDelay = 1000; 
+        zombieDamage = 20;
+    }
+}
+
+function updateTarget() {
+    if (isGameOver) return;
+    
+    const allZombies = Array.from(document.querySelectorAll('.zombie:not(.dead)'));
+    
+    if (allZombies.length === 0) {
+        currentTarget = null;
+        renderTypingDisplay();
+        return;
+    }
+
+    allZombies.sort((a, b) => parseFloat(a.style.left) - parseFloat(b.style.left));
+    currentTarget = allZombies[0];
+    renderTypingDisplay();
+}
+
+function renderTypingDisplay() {
+    if (isGameOver) return;
+
+    if (!currentTarget) {
+        typingDisplay.innerHTML = 'MENUNGGU TARGET...';
+        player.classList.remove('shoot');
+        return;
+    }
+
+    const word = currentTarget.dataset.word;
+    const index = parseInt(currentTarget.dataset.typedIndex);
+
+    if (index > 0) {
+        player.classList.add('shoot');
+    } else {
+        player.classList.remove('shoot');
+    }
+
+    const typedPart = `<span style="color: yellow;">${word.substring(0, index)}</span>`;
+    const untypedPart = word.substring(index);
+    
+    typingDisplay.innerHTML = typedPart + untypedPart;
+}
+
+// ===============================
+// SISTEM ZOMBI 
 // ===============================
 function spawnZombie() {
+    if (isGameOver) return;
+
     const randomWord = wordList[Math.floor(Math.random() * wordList.length)];
     const randomLane = lanes[Math.floor(Math.random() * lanes.length)];
+    
+    const zombieTypes = ['zombie-1', 'zombie-2', 'zombie-3', 'zombie-4', 'zombie-5', 'zombie-6'];
+    const randomType = zombieTypes[Math.floor(Math.random() * zombieTypes.length)];
 
     const zombie = document.createElement('div');
-    zombie.classList.add('zombie');
+    zombie.classList.add('zombie', randomType);
     
     zombie.dataset.word = randomWord; 
     zombie.dataset.typedIndex = 0;    
@@ -36,113 +143,109 @@ function spawnZombie() {
     let zombieX = 1000; 
     zombie.style.left = zombieX + 'px';
 
-    const wordElement = document.createElement('div');
-    wordElement.classList.add('word');
-    wordElement.innerHTML = randomWord; 
-    zombie.appendChild(wordElement);
     randomLane.appendChild(zombie);
+    updateTarget();
 
     const moveInterval = setInterval(function() {
+        if (isGameOver || zombie.classList.contains('dead')) {
+            clearInterval(moveInterval);
+            return;
+        }
+
+        if (isPaused) return; 
+
         zombieX -= 1.5; 
         zombie.style.left = zombieX + 'px';
 
-        // Kalau zombi nyentuh ujung kiri (PLAYER KENA DAMAGE)
         if (zombieX < 80) {
             clearInterval(moveInterval);
             
             if (currentTarget === zombie) {
                 currentTarget = null; 
-                player.classList.remove('shoot');
             }
-            
             zombie.remove(); 
             
-            // 1. Kasih efek gelap ke player
-            player.classList.add('damaged');
-            setTimeout(() => player.classList.remove('damaged'), 300); // Gelap selama 0.3 detik
+            hp -= zombieDamage;
+            if (hp < 0) hp = 0; 
+            healthElement.innerText = hp;
 
-            // 2. Munculkan teks animasi -5
+            score -= 30;
+            if (score < 0) score = 0; 
+            scoreElement.innerText = score;
+            
+            checkLevel(); 
+
+            player.classList.add('damaged');
+            setTimeout(() => player.classList.remove('damaged'), 300);
+
             const damageText = document.createElement('div');
             damageText.classList.add('damage-text');
-            damageText.innerText = '-5';
+            damageText.innerText = `-${zombieDamage}`; 
             gameArea.appendChild(damageText);
-            
-            // Hapus teks dari HTML setelah animasinya selesai (1 detik)
             setTimeout(() => damageText.remove(), 1000);
 
-            // 3. Kurangi skor sebanyak 5 poin
-            score -= 5;
-            scoreElement.innerText = score;
+            updateTarget();
+
+            // Cek Game Over
+            if (hp <= 0) {
+                isGameOver = true;
+                typingDisplay.innerHTML = 'GAME OVER!';
+                
+                // Menampilkan total skor murni yang didapat selama hidup!
+                finalScoreElement.innerText = totalScore; 
+                gameOverScreen.classList.remove('hidden');
+            }
         }
     }, 20);
 }
 
-setInterval(spawnZombie, 3000);
+function scheduleNextZombie() {
+    if (isGameOver) return;
+    
+    if (!isPaused) {
+        spawnZombie();
+    }
+    
+    setTimeout(scheduleNextZombie, spawnDelay); 
+}
+
+setTimeout(scheduleNextZombie, 1000); 
 
 // ===============================
-// SISTEM PENGETIKAN & TEMBAKAN
+// SISTEM PENGETIKAN
 // ===============================
 document.addEventListener('keydown', function(event) {
+    if (isGameOver || isPaused) return; 
+
     const typedLetter = event.key.toLowerCase();
     if (!/^[a-z]$/.test(typedLetter)) return;
 
-    const allZombies = document.querySelectorAll('.zombie');
+    if (!currentTarget) return;
 
-    if (!currentTarget) {
-        for (let zombie of allZombies) {
-            // Abaikan zombi yang sedang mati (punya class 'dead')
-            if (zombie.classList.contains('dead')) continue;
+    const word = currentTarget.dataset.word;
+    let typedIndex = parseInt(currentTarget.dataset.typedIndex);
 
-            const word = zombie.dataset.word;
-            if (word[0] === typedLetter) {
-                currentTarget = zombie; 
-                currentTarget.dataset.typedIndex = 1; 
-                updateWordDisplay(currentTarget);
-                player.classList.add('shoot'); 
-                break; 
-            }
-        }
-    } 
-    else {
-        const word = currentTarget.dataset.word;
-        let typedIndex = parseInt(currentTarget.dataset.typedIndex);
+    if (word[typedIndex] === typedLetter) {
+        typedIndex++; 
+        currentTarget.dataset.typedIndex = typedIndex;
+        
+        renderTypingDisplay();
 
-        if (word[typedIndex] === typedLetter) {
-            typedIndex++; 
-            currentTarget.dataset.typedIndex = typedIndex;
-            updateWordDisplay(currentTarget);
+        if (typedIndex === word.length) {
+            let killedZombie = currentTarget; 
+            killedZombie.classList.add('dead');
+            
+            setTimeout(() => killedZombie.remove(), 300);
 
-            // KALAU KATA SELESAI DIKETIK (ZOMBI MATI)
-            if (typedIndex === word.length) {
-                let killedZombie = currentTarget; // Simpan ke variabel lokal
-                
-                // 1. Sembunyikan teks di atas kepalanya biar rapi
-                killedZombie.querySelector('.word').style.display = 'none';
-                
-                // 2. Tambahkan class .dead buat pemicu efek transisi CSS
-                killedZombie.classList.add('dead');
-                
-                // 3. Hapus elemen fisiknya setelah transisi CSS selesai (0.3 detik)
-                setTimeout(() => killedZombie.remove(), 300);
+            // Zombi mati: Poin masuk ke Skor Utama dan Skor Total
+            score += 20;
+            totalScore += 20; // Variabel ini ga bakal pernah ngurang!
+            scoreElement.innerText = score;
 
-                // Lepas kuncian target & turunkan senjata
-                currentTarget = null;   
-                player.classList.remove('shoot'); 
-                
-                // Tambah skor 10
-                score += 10;
-                scoreElement.innerText = score;
-            }
+            checkLevel();
+
+            currentTarget = null;   
+            updateTarget(); 
         }
     }
 });
-
-function updateWordDisplay(zombie) {
-    const word = zombie.dataset.word;
-    const index = parseInt(zombie.dataset.typedIndex);
-    
-    const typedPart = `<span style="color: yellow;">${word.substring(0, index)}</span>`;
-    const untypedPart = word.substring(index);
-    
-    zombie.querySelector('.word').innerHTML = typedPart + untypedPart;
-}

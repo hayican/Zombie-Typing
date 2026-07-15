@@ -1,4 +1,8 @@
-/* Reset margin biar rapi */
+@font-face {
+    font-family: 'ZombieZone';
+    src: url('/Asset/Font/ZombieZone.ttf'); /* Pastikan ekstensi filenya sesuai (.ttf atau .otf) */
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -6,7 +10,6 @@
     font-family: 'Courier New', Courier, monospace; 
 }
 
-/* Background luar game (hitam) */
 body {
     background-color: #111;
     display: flex;
@@ -16,12 +19,12 @@ body {
     overflow: hidden; 
 }
 
-/* Ukuran Frame Game Utama */
+/* Frame Game */
 #game-container {
     width: 1000px;
     height: 562px; 
     position: relative;
-    background-image: url('bg.png'); 
+    background-image: url('/Asset/bg.png'); 
     background-size: cover;
     background-position: center;
     border: 4px solid #555;
@@ -29,7 +32,7 @@ body {
     overflow: hidden; 
 }
 
-/* Desain Papan Skor */
+/* Papan Skor */
 #scoreboard {
     position: absolute;
     top: 15px;
@@ -45,8 +48,7 @@ body {
     font-size: 18px;
     margin-bottom: 5px;
 }
-
-/* Area Game (Sudah bersih dari flexbox) */
+/* Area Game */
 #game-area {
     width: 100%;
     height: 100%;
@@ -55,7 +57,7 @@ body {
     left: 0;
 }
 
-/* Pengaturan dasar Jalur (Pijakan zombi) */
+/* Jalur  */
 .lane {
     width: 100%;
     position: absolute;
@@ -63,46 +65,76 @@ body {
     height: 10px; 
 }
 
-/* Posisi 4 Jalur (Sesuaikan jika kaki zombi kurang pas) */
 #lane-1 { bottom: 340px; } 
 #lane-2 { bottom: 250px; } 
 #lane-3 { bottom: 150px; } 
 #lane-4 { bottom: 60px; }  
 
-/* Pengaturan Karakter Player */
+/* PLAYER */
 #player {
     width: 220px;  
     height: 300px; 
     position: absolute;
     left: 40px;    
-    bottom: 70px; /* Gw pertahankan angka 70px sesuai settingan lu */
-    background-image: url('player-idle.png'); 
+    bottom: 70px; 
+    background-image: url('/Asset/player-idle.png'); 
     background-size: contain;
     background-repeat: no-repeat;
     background-position: bottom center;
     z-index: 5;
 }
 
-/* Class untuk ganti gambar saat nembak */
+
 #player.shoot {
-    background-image: url('player-shoot.png');
+    background-image: url('/Asset/player-shoot.png');
 }
 
-/* ===============================
-   DESAIN ZOMBI & KATA
-   =============================== */
+#player.damaged {
+    filter: brightness(0.2) sepia(1) hue-rotate(-50deg); /* Gelap dan sedikit kemerahan */
+    transition: filter 0.1s ease;
+}
+
+.damage-text {
+    position: absolute;
+    color: #ff3333;
+    font-size: 32px;
+    font-weight: bold;
+    text-shadow: 2px 2px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000;
+    left: 200px; /* Muncul di samping kanan karakter */
+    bottom: 200px;
+    z-index: 20;
+    animation: floatUpFade 1s forwards; /* Menjalankan animasi di bawah */
+}
+
+@keyframes floatUpFade {
+    0% { transform: translateY(0) scale(1); opacity: 1; }
+    100% { transform: translateY(-60px) scale(1.5); opacity: 0; }
+}
+
+/* ZOMBIE */
 .zombie {
     position: absolute;
     bottom: 0; 
     width: 110px;  
     height: 160px; 
-    background-image: url('zombie.png');
     background-size: contain; 
     background-repeat: no-repeat;
     background-position: bottom center;
 }
 
-/* Teks kata di atas kepala zombi */
+.zombie-1 { background-image: url('/Asset/Zombie/zombie.png'); }
+.zombie-2 { background-image: url('/Asset/Zombie/zombie1.png'); }
+.zombie-3 { background-image: url('/Asset/Zombie/zombie2.png'); }
+.zombie-4 { background-image: url('/Asset/Zombie/zombie3.png'); }
+.zombie-5 { background-image: url('/Asset/Zombie/zombie4.png'); }
+
+.zombie.dead {
+    transform: scale(1.3) rotate(10deg);
+    opacity: 0;
+    filter: grayscale(1) blur(4px);
+    transition: all 0.3s ease-out; 
+}
+
 .word {
     position: absolute;
     top: -35px; 
@@ -118,39 +150,114 @@ body {
     border: 1px solid #fff;
 }
 
-/* ===============================
-   EFEK DAMAGE & MATI
-   =============================== */
-
-/* Efek saat Player kena damage (Jadi gelap) */
-#player.damaged {
-    filter: brightness(0.2) sepia(1) hue-rotate(-50deg); /* Gelap dan sedikit kemerahan */
-    transition: filter 0.1s ease;
-}
-
-/* Teks -5 yang melayang */
-.damage-text {
+#typing-display {
     position: absolute;
-    color: #ff3333;
-    font-size: 32px;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%); /* Posisi persis di tengah atas */
+    font-size: 36px;
     font-weight: bold;
-    text-shadow: 2px 2px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000;
-    left: 200px; /* Muncul di samping kanan karakter */
-    bottom: 200px;
-    z-index: 20;
-    animation: floatUpFade 1s forwards; /* Menjalankan animasi di bawah */
+    color: #fff;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 10px 40px;
+    border: 3px solid #777;
+    border-radius: 10px;
+    z-index: 50; /* Biar selalu di paling depan */
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    text-shadow: 2px 2px 0 #000;
 }
 
-/* Animasi melayang ke atas lalu menghilang */
-@keyframes floatUpFade {
-    0% { transform: translateY(0) scale(1); opacity: 1; }
-    100% { transform: translateY(-60px) scale(1.5); opacity: 0; }
+/* ===============================
+   TOMBOL KONTROL
+   =============================== */
+#controls {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    z-index: 10;
 }
 
-/* Efek saat Zombi mati (Membesar, pudar, dan blur) */
-.zombie.dead {
-    transform: scale(1.3) rotate(10deg);
-    opacity: 0;
-    filter: grayscale(1) blur(4px);
-    transition: all 0.3s ease-out; /* Berubah dengan mulus selama 0.3 detik */
+#controls button {
+    padding: 8px 15px;
+    margin-left: 5px;
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: bold;
+    cursor: pointer;
+    background: #333;
+    color: #fff;
+    border: 2px solid #777;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+#controls button:hover {
+    background: #555;
+}
+
+
+.overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85); 
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 100; 
+}
+
+.overlay.hidden {
+    display: none;
+}
+
+.overlay h1 {
+    font-family: 'ZombieZone', sans-serif;
+    font-size: 90px;
+    color: #fff;
+    margin-bottom: 10px;
+    letter-spacing: 5px;
+    text-shadow: 3px 3px 0 #000; 
+}
+
+.overlay p {
+    color: #fff;
+    font-size: 24px;
+    margin-bottom: 20px;
+    font-weight: bold;
+}
+
+#restart-overlay-btn {
+    padding: 10px 20px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    background: #880000;
+    color: #fff;
+    border: 2px solid #fff;
+    border-radius: 5px;
+}
+
+#restart-overlay-btn:hover {
+    background: #ff0000;
+}
+
+/* Desain Tombol Start di Layar Pause */
+#resume-overlay-btn {
+    padding: 10px 20px;
+    font-size: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    background: #008800; /* Warna Hijau */
+    color: #fff;
+    border: 2px solid #fff;
+    border-radius: 5px;
+    font-family: 'Courier New', Courier, monospace;
+}
+
+#resume-overlay-btn:hover {
+    background: #00bb00; /* Hijau Terang saat di-hover */
 }

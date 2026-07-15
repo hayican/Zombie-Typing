@@ -10,24 +10,35 @@
     
     <div id="game-container">
         
-        <!-- Papan Skor -->
         <div id="scoreboard">
             <h2>Skor: <span id="score">0</span></h2>
-            <h2>HP: <span id="health">5</span></h2>
+            <h2>HP: <span id="health">100</span></h2>
         </div>
 
-        <!-- Area Bermain -->
-        <div id="game-area">
-            
-            <!-- Karakter Pemain -->
-            <div id="player"></div>
+        <div id="controls">
+            <button id="pause-btn">Pause</button>
+            <button id="restart-btn">Restart</button>
+        </div>
 
-            <!-- 4 Jalur Tempat Musuh Muncul -->
+        <div id="typing-display">MENUNGGU TARGET...</div>
+
+        <div id="game-area">
+            <div id="player"></div>
             <div class="lane" id="lane-1"></div>
             <div class="lane" id="lane-2"></div>
             <div class="lane" id="lane-3"></div>
             <div class="lane" id="lane-4"></div>
+        </div>
+ 
+        <div id="game-over-screen" class="overlay hidden">
+            <h1>GAME OVER</h1>
+            <p>Skor Akhir Lu: <span id="final-score">0</span></p>
+            <button id="restart-overlay-btn">Main Lagi</button>
+        </div>
 
+        <div id="pause-screen" class="overlay hidden">
+            <h1>PAUSED</h1>
+            <button id="resume-overlay-btn">Start Game</button> <!-- Tambahan Tombol -->
         </div>
 
     </div>
